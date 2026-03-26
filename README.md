@@ -6,10 +6,10 @@ This project focuses on analyzing sales data from an electronics retail business
 
 ## II. The Goal of Creating This Project
 
-- Analyze phone sales performance using SQL  
-- Identify top products, customers, and trends  
-- Extract business insights by brand, age group, and purchase behavior
-
+This project aims to improve sales performance by analyzing:
+- Phone sales data to identify high‑value customer segments  
+- Product and brand strategies to enhance upselling opportunities  
+- Installment payment policies through data‑driven insights  
 
 ## III. Dataset description table 
 
