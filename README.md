@@ -67,15 +67,14 @@ order by 1;
 
 
 #### Query 2: Number of Customers by Month
-``
+```sql
 SELECT
   FORMAT_DATE('%Y%m', PARSE_DATE('%Y %m %d', DatePurchase)) AS month,
-  
   COUNT(DISTINCT CustomerCode) AS so_khach_hang
 FROM `polar-winter-343402.hometest.hackathon_phone_sales`
 GROUP BY 1
 ORDER BY 1;
-``
+```
 
 | Row | month  | so_khach_hang |
 |-----|--------|---------------|
