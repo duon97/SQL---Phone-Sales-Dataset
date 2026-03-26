@@ -65,3 +65,25 @@ order by 1;
 | 201504 | 19570 |
 | 201505 | 20830 |
 
+
+#### Query 2: Number of Customers by Month
+
+SELECT
+  FORMAT_DATE('%Y%m', PARSE_DATE('%Y %m %d', DatePurchase)) AS month,
+  COUNT(DISTINCT CustomerCode) AS so_khach_hang
+FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+GROUP BY 1
+ORDER BY 1;
+``
+
+| Row | month  | so_khach_hang |
+|-----|--------|---------------|
+| 1   | 201501 | 16130 |
+| 2   | 201502 | 19217 |
+| 3   | 201503 | 17132 |
+| 4   | 201504 | 18828 |
+| 5   | 201505 | 19934 |
+``
+
+
+
