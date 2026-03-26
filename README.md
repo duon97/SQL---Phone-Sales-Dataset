@@ -27,7 +27,7 @@ This project aims to improve sales performance by analyzing:
 | SalesValue          | INTEGER  | Total sales value (Unit × Unitprice) |
 
 
-### hackathon_phonesales
+### phone_sales
 
 | Column Name      | Data Type | Description |
 |------------------|----------|-------------|
