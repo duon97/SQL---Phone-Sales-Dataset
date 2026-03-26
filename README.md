@@ -70,6 +70,7 @@ order by 1;
 ``
 SELECT
   FORMAT_DATE('%Y%m', PARSE_DATE('%Y %m %d', DatePurchase)) AS month,
+  
   COUNT(DISTINCT CustomerCode) AS so_khach_hang
 FROM `polar-winter-343402.hometest.hackathon_phone_sales`
 GROUP BY 1
