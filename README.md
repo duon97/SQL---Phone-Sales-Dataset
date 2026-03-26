@@ -354,7 +354,7 @@ ORDER BY ti_le_installments DESC;
 | HUAWEI | 0 | 24 | 0.0 |
 | ALCATEL | 0 | 1 | 0.0 |
 
-## ✅ Conclusion & Key Insights
+## V. Conclusion & Key Insights
 
 Based on the SQL analysis of the phone sales dataset, the following key insights were identified:
 
