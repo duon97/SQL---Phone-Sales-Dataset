@@ -48,6 +48,7 @@ This project focuses on analyzing sales data from an electronics retail business
 | Unit             | INTEGER  | Quantity purchased |
 ## IV. Explore the Dataset
 #### Query 1️⃣:
+```
 select
   format_date('%Y %m',parse_date('%Y %m %d',DatePurchase)) month
   ,count(distinct TransactionID) so_don_hang
