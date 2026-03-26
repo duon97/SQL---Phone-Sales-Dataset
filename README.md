@@ -25,7 +25,7 @@ This project focuses on analyzing sales data from an electronics retail business
 | Unitprice           | INTEGER  | Price per unit of accessory |
 | Unit                | INTEGER  | Quantity purchased |
 | SalesValue          | INTEGER  | Total sales value (Unit × Unitprice) |
-``
+
 
 ### hackathon_phonesales
 
@@ -46,4 +46,4 @@ This project focuses on analyzing sales data from an electronics retail business
 | Unitprice        | INTEGER  | Price per unit |
 | SalesValue       | INTEGER  | Total sales value |
 | Unit             | INTEGER  | Quantity purchased |
-``
+
