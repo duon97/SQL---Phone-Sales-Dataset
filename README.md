@@ -53,7 +53,7 @@ select
   ,count(distinct TransactionID) so_don_hang
 from `polar-winter-343402.hometest.hackathon_phone_sales`
 group by 1
-order by 1
+order by 1;
 ```
 
 | Row | month  | so_don_hang |
