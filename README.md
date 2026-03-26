@@ -46,4 +46,21 @@ This project focuses on analyzing sales data from an electronics retail business
 | Unitprice        | INTEGER  | Price per unit |
 | SalesValue       | INTEGER  | Total sales value |
 | Unit             | INTEGER  | Quantity purchased |
+## IV. Explore the Dataset
+#### Query 1️⃣:
+select
+  format_date('%Y %m',parse_date('%Y %m %d',DatePurchase)) month
+  ,count(distinct TransactionID) so_don_hang
+from `polar-winter-343402.hometest.hackathon_phone_sales`
+group by 1
+order by 1
+```
+
+| Row | month  | so_don_hang |
+|-----|--------|-------------|
+| 1   | 201501 | 16963 |
+| 2   | 201502 | 19999 |
+| 3   | 201503 | 17944 |
+| 4   | 201504 | 19570 |
+| 5   | 201505 | 20830 |
 
