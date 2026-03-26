@@ -47,7 +47,7 @@ This project aims to improve sales performance by analyzing:
 | SalesValue       | INTEGER  | Total sales value |
 | Unit             | INTEGER  | Quantity purchased |
 ## IV. Explore the Dataset
-#### Query 1️:
+#### Query 1️: Number of Orders by month
 ```
 select
   format_date('%Y %m',parse_date('%Y %m %d',DatePurchase)) month
