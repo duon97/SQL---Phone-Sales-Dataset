@@ -53,8 +53,7 @@ The silhouette score evaluates how well each customer fits its own cluster compa
 | 5 | 0.30 |
 | 7 | 0.31 |
 
-K = 3 has the highest score, but all three are low and within 0.04 of each other, so the clusters overlap at every K and the score alone does not decide the choice.
-
+K = 3 has the highest score (0.34), against 0.31 for K = 7 and 0.30 for K = 5. All three fall in the moderate range (0.25 to 0.5), so the clusters have a reasonable structure but are not sharply separated. The differences between the three scores are small (0.04), so the score alone does not decide the choice.
 ### 4. Interpret each cluster
 Each cluster is described by its RFM profile, using boxplots of Amount (Monetary) per cluster to compare the median, the spread, and the outliers, then labeled by business value.
 
@@ -94,7 +93,7 @@ Values below are read from the charts and are approximate.
 
 | Insight | Recommendation |
 |---|---|
-| K = 3 has the highest silhouette score (0.34), against 0.31 for K = 7 and 0.30 for K = 5. All scores are low and close together, so the clusters overlap at every K. | Use K = 3 as the working segmentation, and treat cluster boundaries as soft rather than strict cut-offs. |
+| K = 3 has the highest silhouette score (0.34), against 0.31 for K = 7 and 0.30 for K = 5. All scores are in the moderate range and close together, and the Amount boxplot at K = 3 shows clearly separated clusters, with overlap only through the high outliers of Cluster 0. | Use K = 3 as the working segmentation, and review the high-spend customers of Cluster 0 individually, since they are the ones most likely to sit near the boundary with Cluster 2. |
 | With K = 3, Cluster 2 (High-Value) is made up of frequent, recent, high spenders, with median spend about £2,700 and no outliers. | Reward and retain with loyalty benefits and priority service, since losing these customers costs the most revenue. |
 | With K = 3, Cluster 0 (Medium-Value) has moderate activity, with median spend about £1,000 and high outliers that reach the range of Cluster 2. | Upsell with bundles and cross-sell offers, and track the high-spend outliers as candidates to move into High-Value. |
 | With K = 3, Cluster 1 (Low-Value) is inactive or low-spending, with median spend about £300 and almost all customers below about £850. | Run engagement campaigns to drive repeat purchases, and measure reactivation before increasing spend on this group. |
