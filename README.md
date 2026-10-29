@@ -1,107 +1,387 @@
+# SQL--Phone-Sales-Dataset
+# I. Introduction
 # Customer Segmentation: RFM and K-means
 
+This project focuses on analyzing sales data from an electronics retail business, specifically centered around phone and accessory transactions. The primary goal is to extract meaningful insights from the data that can help improve sales strategies, understand customer preferences, and enhance product offerings.
 ## I. Introduction
 
 This project segments the customers of an online retailer using their transaction history. The goal is to help the company apply a different strategy to each customer group, based on how recently, how often, and how much each customer buys.
 
 ## II. The Goal of Creating This Project
 
+This project aims to improve sales performance by analyzing:
+- Phone sales data to identify high‑value customer segments  
+- Product and brand strategies to enhance upselling opportunities  
+- Installment payment policies through data‑driven insights  
+
+## III. Dataset description table 
+
+
+### accessories_sale
+
+| Column Name         | Data Type | Description |
+|---------------------|----------|-------------|
+| TransactionID       | STRING   | Unique transaction identifier |
+| CustomerCode        | STRING   | Unique customer code |
+| Accessories_name    | STRING   | Accessories category name |
+| Accessories_subname | STRING   | Accessories sub-category name |
+| Unitprice           | INTEGER  | Price per unit of accessory |
+| Unit                | INTEGER  | Quantity purchased |
+| SalesValue          | INTEGER  | Total sales value (Unit × Unitprice) |
+
+
+### phone_sales
+
+| Column Name      | Data Type | Description |
+|------------------|----------|-------------|
+| TransactionID    | STRING   | Unique transaction identifier |
+| CustomerCode     | STRING   | Unique customer code |
+| ProductName      | STRING   | Phone model name |
+| ProductBrand     | STRING   | Phone brand |
+| DatePurchase     | STRING   | Purchase date |
+| GeographicalArea | STRING   | Customer geographical area |
+| Payment_method   | STRING   | Payment method (Cash / Installment) |
+| Bank             | STRING   | Bank used for installment payment |
+| Color            | STRING   | Phone color |
+| Carrier          | STRING   | Mobile network carrier |
+| SexType          | STRING   | Customer gender |
+| YearOldRange     | STRING   | Customer age range |
+| Unitprice        | INTEGER  | Price per unit |
+| SalesValue       | INTEGER  | Total sales value |
+| Unit             | INTEGER  | Quantity purchased |
+## IV. Explore the Dataset
+#### Query 1️: Number of Orders by month
+```
+select
+  format_date('%Y %m',parse_date('%Y %m %d',DatePurchase)) month
+  ,count(distinct TransactionID) so_don_hang
+from `polar-winter-343402.hometest.hackathon_phone_sales`
+group by 1
+order by 1;
+```
+
+ | month  | so_don_hang |
+|--------|-------------|
+| 201501 | 16963 |
+| 201502 | 19999 |
+| 201503 | 17944 |
+| 201504 | 19570 |
+| 201505 | 20830 |
+
+
+#### Query 2: Number of Customers by Month
+```sql
+SELECT
+  FORMAT_DATE('%Y%m', PARSE_DATE('%Y %m %d', DatePurchase)) AS month,
+  COUNT(DISTINCT CustomerCode) AS so_khach_hang
+FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+GROUP BY 1
+ORDER BY 1;
+```
+
+ | month  | so_khach_hang |
+|--------|---------------|
+| 201501 | 16130 |
+| 201502 | 19217 |
+| 201503 | 17132 |
+| 201504 | 18828 |
+| 201505 | 19934 |
+#### Query 3: Top 3 Phone Brands Preferred by Male and Female Customers (by Orders)
+
+```sql
+WITH raw_data AS (
+  SELECT
+    SexType,
+    ProductBrand,
+    COUNT(TransactionID) AS so_luong
+  FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+  GROUP BY 1, 2
+),
+ranking_so_luong AS (
+  SELECT
+    SexType,
+    ProductBrand,
+    so_luong,
+    DENSE_RANK() OVER (PARTITION BY SexType ORDER BY so_luong DESC) AS rk
+  FROM raw_data
+)
+SELECT
+  SexType,
+  ProductBrand,
+  so_luong
+FROM ranking_so_luong
+WHERE rk <= 3
+ORDER BY SexType, so_luong DESC;
+```
+
+| SexType | ProductBrand | so_luong |
+|--------|--------------|----------|
+| NAM | SAMSUNG | 15895 |
+| NAM | NOKIA | 9869 |
+| NAM | Q-SMART | 8395 |
+| NU  | SAMSUNG | 18320 |
+| NU  | NOKIA | 7715 |
+| NU  | Q-SMART | 7136 |
+#### Query 4: Which Age Group Buys the Most and Generates the Highest Revenue?
+
+```sql
+WITH DT_DS_tuoi AS (
+  SELECT
+    YearOldRange,
+    SUM(Unit) AS Tong_DS,
+    SUM(SalesValue) AS Tong_DT
+  FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+  GROUP BY 1
+),
+ranking AS (
+  SELECT
+    YearOldRange,
+    Tong_DS,
+    DENSE_RANK() OVER (ORDER BY Tong_DS DESC) AS dk_DS,
+    Tong_DT,
+    DENSE_RANK() OVER (ORDER BY Tong_DT DESC) AS dk_DT
+  FROM DT_DS_tuoi
+)
+SELECT
+  YearOldRange,
+  Tong_DS,
+  Tong_DT
+FROM ranking
+WHERE dk_DS = 1 OR dk_DT = 1;
+```
+
+| YearOldRange | Tong_DS | dk_DS | Tong_DT | dk_DT |
+|--------------|--------:|------:|----------------:|------:|
+| 26-30 | 57045 | 1 | 250380794600 | 1 |
+#### Query 5: Top 3 Products Generating the Highest Revenue by Month
+
+```sql
+WITH raw_data AS (
+  SELECT
+    FORMAT_DATE('%Y%m', PARSE_DATE('%Y %m %d', DatePurchase)) AS month,
+    ProductName,
+    SUM(SalesValue) AS doanh_thu
+  FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+  GROUP BY 1, 2
+),
+ranking_doanhthu AS (
+  SELECT
+    month,
+    ProductName,
+    doanh_thu,
+    DENSE_RANK() OVER (PARTITION BY month ORDER BY doanh_thu DESC) AS rk
+  FROM raw_data
+)
+SELECT
+  month,
+  ProductName,
+  doanh_thu
+FROM ranking_doanhthu
+WHERE rk <= 3
+ORDER BY month, rk;
+```
+
+| month  | ProductName | doanh_thu |
+|--------|-------------|-----------:|
+| 201501 | Galaxy Note II N7100 Marble White | 6325813000 |
+| 201501 | Galaxy Note II N7100 Titan Gray | 4961552500 |
+| 201501 | Lumia 620 Black | 3325739500 |
+| 201502 | Galaxy Note II N7100 Marble White | 5035073000 |
+| 201502 | Galaxy Note II N7100 Titan Gray | 3909001000 |
+| 201502 | Lumia 620 Black | 3892467000 |
+| 201503 | Galaxy Note II N7100 Marble White | 3578831000 |
+| 201503 | Lumia 520 Black | 3306246000 |
+| 201503 | S5360(Toroto) White | 2811021000 |
+| 201504 | Lumia 520 Black | 7704350000 |
+| 201504 | Galaxy S3 Mini I8190 Marble White | 4254747000 |
+| 201504 | Lumia 720 Black | 2949279000 |
+| 201505 | Lumia 520 Black | 8159257000 |
+| 201505 | Galaxy S4 I9500 White | 5415746500 |
+| 201505 | Galaxy S3 Mini I8190 Marble White | 3901046000 |
+
+#### Query 6: Which Phone Brands Are Preferred by Customers Aged 26–30?
+
+```sql
+WITH raw_data AS (
+  SELECT
+    YearOldRange,
+    ProductBrand,
+    COUNT(TransactionID) AS so_luong
+  FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+  WHERE YearOldRange = '26-30'
+  GROUP BY 1, 2
+)
+SELECT
+  YearOldRange,
+  ProductBrand,
+  so_luong,
+  DENSE_RANK() OVER (ORDER BY so_luong DESC) AS rk
+FROM raw_data
+ORDER BY rk;
+```
+
+| YearOldRange | ProductBrand | so_luong | rk |
+|--------------|--------------|---------:|---:|
+| 26-30 | SAMSUNG | 20656 | 1 |
+| 26-30 | Q-SMART | 9927 | 2 |
+| 26-30 | NOKIA | 9092 | 3 |
+| 26-30 | Mobistar | 5547 | 4 |
+| 26-30 | LENOVO | 3075 | 5 |
+| 26-30 | SONY | 2781 | 6 |
+| 26-30 | LG | 1830 | 7 |
+| 26-30 | HTC | 1744 | 8 |
+| 26-30 | Q-MOBILE | 800 | 9 |
+| 26-30 | APPLE | 780 | 10 |
+| 26-30 | BLACKBERRY | 55 | 11 |
+| 26-30 | HUAWEI | 15 | 12 |
+| 26-30 | F-MOBILE | 6 | 13 |
+| 26-30 | ALCATEL | 1 | 14 |
+#### Query 7: Are Customers Aged 26–30 Willing to Buy Accessories?
+
+```sql
+WITH raw_data AS (
+  SELECT
+    a.TransactionID,
+    a.YearOldRange,
+    b.Accessories_name
+  FROM `polar-winter-343402.hometest.hackathon_phone_sales` a
+  LEFT JOIN `polar-winter-343402.hometest.hackathon_accessories_sales` b
+    USING (TransactionID)
+)
+SELECT
+  YearOldRange,
+  COUNT(Accessories_name) AS accessories_sale,
+  COUNT(*) AS total,
+  COUNT(Accessories_name) / COUNT(*) AS ti_le_mua_phu_kien
+FROM raw_data
+GROUP BY 1
+ORDER BY 1;
+```
+
+| YearOldRange | accessories_sale | total | ti_le_mua_phu_kien |
+|--------------|-----------------:|------:|-------------------:|
+| Duoi 21 | 1159 | 3175 | 0.3650 |
+| 21-25 | 725 | 1929 | 0.3758 |
+| 26-30 | 21491 | 56309 | 0.3817 |
+| 31-35 | 7107 | 19621 | 0.3622 |
+| 36-40 | 4428 | 12361 | 0.3582 |
+| Tren 40 | 731 | 1911 | 0.3825 |
+``
+#### Query 8: Do Customers of Each Brand Buy Accessories or Insurance?
+
+```sql
+WITH raw_data AS (
+  SELECT
+    a.TransactionID,
+    a.ProductBrand,
+    b.Accessories_name
+  FROM `polar-winter-343402.hometest.hackathon_phone_sales` a
+  LEFT JOIN `polar-winter-343402.hometest.hackathon_accessories_sales` b
+    USING (TransactionID)
+)
+SELECT
+  ProductBrand,
+  COUNT(Accessories_name) AS accessories_sale,
+  COUNT(*) AS total,
+  COUNT(Accessories_name) / COUNT(*) AS ti_le_mua_phu_kien
+FROM raw_data
+GROUP BY 1
+ORDER BY 1;
+```
+
+| ProductBrand | accessories_sale | total | ti_le_mua_phu_kien |
+|--------------|-----------------:|------:|-------------------:|
+| ALCATEL | 0 | 1 | 0.0 |
+| APPLE | 1318 | 1318 | 1.0 |
+| BLACKBERRY | 108 | 108 | 1.0 |
+| F-MOBILE | 0 | 13 | 0.0 |
+| HTC | 0 | 2987 | 0.0 |
+| HUAWEI | 0 | 24 | 0.0 |
+| LENOVO | 0 | 5410 | 0.0 |
+| LG | 0 | 3155 | 0.0 |
+| Mobistar | 0 | 8986 | 0.0 |
+| NOKIA | 0 | 17584 | 0.0 |
+| Q-MOBILE | 0 | 1332 | 0.0 |
+| Q-SMART | 0 | 15531 | 0.0 |
+| SAMSUNG | 34215 | 34215 | 1.0 |
+| SONY | 0 | 4642 | 0.0 |
+``
+#### Query 9: Which Age Group Has the Highest Installment Purchase Behavior?
+
+```sql
+SELECT
+  YearOldRange,
+  COUNT(Bank) AS installments,
+  COUNT(*) AS total_orders,
+  COUNT(Bank) / COUNT(*) AS ti_le_installments
+FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+GROUP BY 1
+ORDER BY ti_le_installments DESC;
+```
+
+| YearOldRange | installments | total_orders | ti_le_installments |
+|--------------|-------------:|-------------:|-------------------:|
+| 31-35 | 1553 | 19621 | 0.0791 |
+| Duoi 21 | 218 | 3175 | 0.0687 |
+| 26-30 | 3626 | 56309 | 0.0644 |
+| 21-25 | 122 | 1929 | 0.0632 |
+| Tren 40 | 119 | 1911 | 0.0623 |
+| 36-40 | 762 | 12361 | 0.0616 |
+#### Query 10: Which Phone Brands Are Most Frequently Purchased via Installments?
+
+```sql
+SELECT
+  ProductBrand,
+  COUNT(Bank) AS installments,
+  COUNT(*) AS total_orders,
+  COUNT(Bank) / COUNT(*) AS ti_le_installments
+FROM `polar-winter-343402.hometest.hackathon_phone_sales`
+GROUP BY 1
+ORDER BY ti_le_installments DESC;
+```
+
+| ProductBrand | installments | total_orders | ti_le_installments |
+|--------------|-------------:|-------------:|-------------------:|
+| APPLE | 169 | 1318 | 0.1282 |
+| SONY | 587 | 4642 | 0.1265 |
+| HTC | 323 | 2987 | 0.1081 |
+| NOKIA | 1859 | 17584 | 0.1057 |
+| LG | 285 | 3155 | 0.0903 |
+| LENOVO | 355 | 5410 | 0.0656 |
+| SAMSUNG | 2235 | 34215 | 0.0653 |
+| BLACKBERRY | 4 | 108 | 0.0370 |
+| Q-SMART | 468 | 15531 | 0.0301 |
+| Mobistar | 115 | 8986 | 0.0128 |
+| Q-MOBILE | 0 | 1332 | 0.0 |
+| F-MOBILE | 0 | 13 | 0.0 |
+| HUAWEI | 0 | 24 | 0.0 |
+| ALCATEL | 0 | 1 | 0.0 |
+
+## V. Conclusion & Key Insights
+
+Based on the SQL analysis of the phone sales dataset, the following key insights were identified:
+
+### 🔹 Sales & Customer Trends
+- Monthly sales volume shows a generally increasing trend, indicating stable and growing demand.
+- The **26–30 age group** is the most valuable segment, contributing the **highest sales volume and revenue**.
+
+### 🔹 Brand & Product Performance
+- **Samsung** is the most popular brand across both male and female customers and dominates overall sales volume.
+- Certain products (e.g., Samsung Galaxy and Nokia Lumia models) consistently rank among the **top revenue-generating products** across multiple months.
+- **Apple, Sony, and HTC** have the **highest installment purchase ratios**, indicating stronger appeal for high-priced or premium products.
+
+### 🔹 Customer Behavior Insights
+- Customers aged **26–30** show strong willingness to buy **accessories**, with one of the highest accessory attachment rates.
+- Accessory and insurance purchases are highly concentrated in a few brands (notably **Samsung and Apple**), while many brands show untapped cross-selling potential.
+- Installment purchases are most common among customers aged **31–35**, suggesting financial flexibility combined with value-conscious behavior.
+
+### 🔹 Business Implications
+- Focus marketing and upselling strategies on the **26–30 and 31–35** age groups.
+- Expand **accessory and insurance bundling** beyond top brands to increase average order value.
+- Promote installment payment options for **premium brands** to improve conversion rates.
+
+Overall, this project demonstrates how SQL can be effectively used to transform raw sales data into actionable business insights, supporting strategic decision-making in sales, pricing, and customer targeting.
 This project aims to boost business performance by:
 - Segmenting customers into meaningful groups from purchase behavior
 - Identifying which customers to reward, upsell, or re-engage
 - Supporting targeted marketing instead of one uniform strategy
-
-## III. Dataset description table
-
-The data contains sales history only, with no demographic information about customers, so segmentation uses the RFM model.
-
-### transactions
-
-| Column Name | Description |
-|---|---|
-| InvoiceNo | Invoice ID |
-| StockCode | ID of the purchased item |
-| Description | Item description |
-| Quantity | Quantity of the item purchased |
-| InvoiceDate | Purchase date |
-| UnitPrice | Item price (GBP) |
-| CustomerID | ID of the purchasing customer |
-| Country | Customer's country |
-
-### RFM attributes (calculated per customer)
-
-| Attribute | Description |
-|---|---|
-| Recency | How recently the customer last purchased |
-| Frequency | How often the customer purchases |
-| Monetary (Amount) | Total amount (GBP) of all the customer's transactions |
-
-## IV. Methodology
-
-### 1. Prepare the data
-Collect, clean, and preprocess the transaction data, then aggregate it into one row per customer with Recency, Frequency, and Monetary. The three metrics are standardized so that no single metric dominates the distance calculation.
-
-### 2. K-means clustering
-K-means groups customers so that customers in the same cluster are close to each other in RFM space and far from customers in other clusters. The number of clusters K must be chosen in advance, so the model is run with K = 3, 5, and 7.
-
-### 3. Silhouette score
-The silhouette score evaluates how well each customer fits its own cluster compared with the nearest other cluster. It ranges from -1 to 1: values close to 1 mean clusters are compact and well separated, values near 0 mean clusters overlap, and negative values mean customers are likely in the wrong cluster. It is used to compare different values of K.
-
-| K | Silhouette score |
-|---|---|
-| 3 | 0.34 |
-| 5 | 0.30 |
-| 7 | 0.31 |
-
-K = 3 has the highest score (0.34), against 0.31 for K = 7 and 0.30 for K = 5. All three fall in the moderate range (0.25 to 0.5), so the clusters have a reasonable structure but are not sharply separated. The differences between the three scores are small (0.04), so the score alone does not decide the choice.
-### 4. Interpret each cluster
-Each cluster is described by its RFM profile, using boxplots of Amount (Monetary) per cluster to compare the median, the spread, and the outliers, then labeled by business value.
-
-## V. Cluster Analysis
-
-Values below are read from the charts and are approximate.
-
-### K = 3 (silhouette 0.34)
-
-<img width="997" height="570" alt="image" src="https://github.com/user-attachments/assets/37b5b206-4db7-4eb4-9e1d-42c2c38c562e" />
-
-- Cluster 2: highest spend. Median about £2,700, middle half between about £1,900 and £3,900, no outliers.
-- Cluster 0: middle spend. Median about £1,000, middle half between about £650 and £1,600. Many high outliers up to about £5,300 reach the range of Cluster 2.
-- Cluster 1: lowest spend. Median about £300, middle half between about £170 and £430, almost all customers below about £850.
-
-### K = 5 (silhouette 0.30)
-
-<img width="1123" height="543" alt="image" src="https://github.com/user-attachments/assets/ef27d83b-4dde-4e3e-8fd7-79fd2a5ee5db" />
-
-- Cluster 1: highest spend. Median about £3,100, middle half between about £2,100 and £4,250.
-- Cluster 3: upper-middle spend. Median about £1,750, middle half between about £1,170 and £2,580, with high outliers up to about £5,700.
-- Cluster 0: middle spend. Median about £800, middle half between about £580 and £1,130, with outliers up to about £5,000.
-- Cluster 4: low spend. Median about £390, middle half between about £250 and £600.
-- Cluster 2: lowest spend. Median about £230, middle half between about £150 and £330, maximum about £770.
-
-### K = 7 (silhouette 0.31)
-
-<img width="1047" height="581" alt="image" src="https://github.com/user-attachments/assets/b7338a7a-9367-406b-bab5-b40081c25d7c" />
-
-- Cluster 3: highest spend. Median about £4,750, middle half between about £4,120 and £5,260.
-- Clusters 1 and 5: upper-middle spend. Medians about £2,150 and £2,100, middle halves between about £1,550 and £3,080 (Cluster 1) and £1,450 and £2,890 (Cluster 5).
-- Clusters 2 and 6: middle spend. Medians about £700 and £790, middle halves between about £490 and £950 (Cluster 2) and £580 and £1,130 (Cluster 6). Cluster 6 has many high outliers up to about £4,970.
-- Clusters 0 and 4: lowest spend. Medians about £220 and £270, maximum about £850 and £1,020.
-- Three pairs of clusters (1 and 5, 2 and 6, 0 and 4) have almost the same Amount distribution, so they can only be told apart by Recency or Frequency.
-
-## VI. Insight and Recommendation
-
-| Insight | Recommendation |
-|---|---|
-| K = 3 has the highest silhouette score (0.34), against 0.31 for K = 7 and 0.30 for K = 5. All scores are in the moderate range and close together, and the Amount boxplot at K = 3 shows clearly separated clusters, with overlap only through the high outliers of Cluster 0. | Use K = 3 as the working segmentation, and review the high-spend customers of Cluster 0 individually, since they are the ones most likely to sit near the boundary with Cluster 2. |
-| With K = 3, Cluster 2 (High-Value) is made up of frequent, recent, high spenders, with median spend about £2,700 and no outliers. | Reward and retain with loyalty benefits and priority service, since losing these customers costs the most revenue. |
-| With K = 3, Cluster 0 (Medium-Value) has moderate activity, with median spend about £1,000 and high outliers that reach the range of Cluster 2. | Upsell with bundles and cross-sell offers, and track the high-spend outliers as candidates to move into High-Value. |
-| With K = 3, Cluster 1 (Low-Value) is inactive or low-spending, with median spend about £300 and almost all customers below about £850. | Run engagement campaigns to drive repeat purchases, and measure reactivation before increasing spend on this group. |
-| With K = 5, the upper-middle group (Cluster 3, median about £1,750) is separated from the top group (Cluster 1, median about £3,100), and low-value customers are split into Cluster 4 (about £390) and Cluster 2 (about £230). The silhouette score is the lowest of the three (0.30). | Move to K = 5 only if the company can run more than three distinct strategies and a test shows that the extra clusters respond differently. |
-| With K = 7, three pairs of clusters have almost the same Amount distribution, and the silhouette score (0.31) is not better than K = 3. | Do not use K = 7 for strategy, since the extra clusters add complexity without a clear difference in spend or a better fit. |
-| High outliers appear in the middle clusters at every K (Cluster 0 at K = 3, Clusters 0 and 3 at K = 5, Cluster 6 at K = 7). | Review these customers individually, since they spend like a higher segment but are grouped with a lower one by the other RFM metrics. |
-
-## Tech Stack
-
-- Python: pandas, scikit-learn (K-means, silhouette score), seaborn, matplotlib
-- RFM model, K-means, silhouette score
